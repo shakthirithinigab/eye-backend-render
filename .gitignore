@@ -1,0 +1,6 @@
+eye_disease_vit.pth
+*.pth
+*.pt
+venv/
+__pycache__/
+dataset/
