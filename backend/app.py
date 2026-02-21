@@ -27,14 +27,14 @@ DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", DEVICE)
 
 # =========================
-# LOAD CLASS NAMES (FIXED ORDER)
+# ✅ HARD CODE CLASS NAMES (NO DATASET NEEDED)
 # =========================
-DATASET_PATH = "dataset/train"
-
-class_names = sorted([
-    d for d in os.listdir(DATASET_PATH)
-    if os.path.isdir(os.path.join(DATASET_PATH, d))
-])
+class_names = [
+    "Cataract",
+    "Diabetic Retinopathy",
+    "Glaucoma",
+    "Normal"
+]
 
 NUM_CLASSES = len(class_names)
 print("Loaded Classes:", class_names)
@@ -47,7 +47,7 @@ config = ViTConfig.from_pretrained(
     num_labels=NUM_CLASSES
 )
 
-config.output_attentions = True  # Enable attention output
+config.output_attentions = True
 
 # =========================
 # LOAD MODEL
@@ -58,7 +58,6 @@ model = ViTForImageClassification.from_pretrained(
     ignore_mismatched_sizes=True
 )
 
-# Load trained weights safely
 state_dict = torch.load("eye_disease_vit.pth", map_location=DEVICE)
 model.load_state_dict(state_dict, strict=False)
 
@@ -68,7 +67,7 @@ model.eval()
 print("✅ Model loaded successfully")
 
 # =========================
-# IMAGE PROCESSOR (OFFICIAL)
+# IMAGE PROCESSOR
 # =========================
 processor = ViTImageProcessor.from_pretrained(
     "google/vit-base-patch16-224"
@@ -99,7 +98,7 @@ def predict_disease(img_tensor):
     return label, round(confidence, 2)
 
 # =========================
-# HEATMAP GENERATION (SAFE)
+# HEATMAP GENERATION
 # =========================
 def generate_attention_heatmap(img_tensor, original_image):
     try:
@@ -174,8 +173,6 @@ def predict():
 # =========================
 # RUN SERVER
 # =========================
-
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
-
